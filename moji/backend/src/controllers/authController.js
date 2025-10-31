@@ -110,3 +110,27 @@ export const signIn = async (req, res) => {
         })
     }
 }
+
+export const signOut = async (req, res) => {
+    try {
+        // Get refresh token from cookie
+        const token = req.cookies?.refreshToken;
+
+        if (token) {
+            // delete refresh token from session
+            await Session.deleteOne({
+                refreshToken: token
+            });
+
+            // delete cookie
+            req.clearCookie('refreshToken');
+        }
+        return res.status(204);
+
+    } catch (error) {
+        console.log("Error when sign out", error);
+        return res.status(500).json({
+            message: "System error"
+        })
+    }
+}
