@@ -123,7 +123,7 @@ export const signOut = async (req, res) => {
             });
 
             // delete cookie
-            req.clearCookie('refreshToken');
+            res.clearCookie('refreshToken');
         }
         return res.status(204);
 
