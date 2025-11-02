@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
+import { authService } from '@/services/authService';
+import type { AuthState } from '@/types/store';
 
-export const useAuthStore = create((set, get) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     accessToken: null,
     user: null,
     loading: false,
@@ -10,6 +12,8 @@ export const useAuthStore = create((set, get) => ({
         try {
             set({ loading: true });
             // call backend api
+            await authService.signUp(username, password, email, firstName, lastName);
+
             toast.success('Signup successfully! You will be redirected to signin page')
         } catch (error) {
             console.error(error);
@@ -17,6 +21,21 @@ export const useAuthStore = create((set, get) => ({
         } finally {
             set({ loading: false });
         }
+    },
+
+    signIn: async (username, password) => {
+        try {
+            set({ loading: true });
+            // call backend api
+            const { accessToken } = await authService.signIn(username, password);
+            set({ accessToken })
+            toast.success('Signin successfully! You will be redirected to signin page')
+        } catch (error) {
+            console.error(error);
+            toast.error('Signin failed!!!')
+        } finally {
+            set({ loading: false });
+        }
     }
 
-}))
+}));
