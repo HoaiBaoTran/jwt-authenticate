@@ -115,6 +115,7 @@ export const signOut = async (req, res) => {
     try {
         // Get refresh token from cookie
         const token = req.cookies?.refreshToken;
+        console.log('token', token)
 
         if (token) {
             // delete refresh token from session
@@ -125,7 +126,8 @@ export const signOut = async (req, res) => {
             // delete cookie
             res.clearCookie('refreshToken');
         }
-        return res.status(204);
+
+        return res.sendStatus(204);
 
     } catch (error) {
         console.log("Error when sign out", error);
