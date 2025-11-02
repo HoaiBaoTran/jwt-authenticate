@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import Session from '../models/Session.js';
 
-const ACCESS_TOKEN_TTL = '30m';
+const ACCESS_TOKEN_TTL = '30s';
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
 
 export const signUp = async (req, res) => {
@@ -133,6 +133,52 @@ export const signOut = async (req, res) => {
         console.log("Error when sign out", error);
         return res.status(500).json({
             message: "System error"
+        })
+    }
+}
+
+// create accessToken from refreshToken
+export const refreshToken = async (req, res) => {
+    try {
+        // Get refreshToken from cookie
+        const token = req.cookies?.refreshToken;
+
+        if (!token) {
+            return res.status(401).json({
+                message: 'Token not exists'
+            })
+        }
+
+        // Compare with refreshToken in DB
+        const session = await Session.findOne({ refreshToken: token })
+
+        if (!session) {
+            return res.status(403).json({
+                message: 'invalid token or token expired'
+            })
+        }
+
+        // Is is expired?
+        if (session.expiresAt < new Date()) {
+            return res.status(403).json({
+                message: 'Token expired'
+            })
+        }
+
+        // Create accessToken
+        const accessToken = jwt.sign({
+            userId: session.userId
+        }, process.env.ACCESS_TOKEN_SECRET, process.env.ACCESS_TOKEN_TTL);
+
+        // Return accessToken
+        return res.status(200).json({
+            accessToken
+        })
+
+    } catch (error) {
+        console.error('Error when call refreshToken', error);
+        return res.status(500).json({
+            message: 'System error'
         })
     }
 }
